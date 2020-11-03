@@ -383,6 +383,12 @@ public final class StringUtils {
         return buf.toString();
     }
 
+    /**
+     * 驼峰转换成分割
+     * @param camelName appleStore
+     * @param split "."
+     * @return apple.store
+     */
     public static String camelToSplitName(String camelName, String split) {
         if (camelName == null || camelName.length() == 0) {
             return camelName;

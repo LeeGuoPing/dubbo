@@ -111,6 +111,7 @@ public abstract class Wrapper {
     }
 
     private static Wrapper makeWrapper(Class<?> c) {
+        // 检查类型是否为原始类型
         if (c.isPrimitive())
             throw new IllegalArgumentException("Can not create wrapper for primitive type: " + c);
 
@@ -125,6 +126,7 @@ public abstract class Wrapper {
         c2.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
         c3.append(name).append(" w; try{ w = ((").append(name).append(")$1); }catch(Throwable e){ throw new IllegalArgumentException(e); }");
 
+        // 存储成员变量以及类型
         Map<String, Class<?>> pts = new HashMap<String, Class<?>>(); // <property name, property types>
         Map<String, Method> ms = new LinkedHashMap<String, Method>(); // <method desc, Method instance>
         List<String> mns = new ArrayList<String>(); // method names.
@@ -139,11 +141,13 @@ public abstract class Wrapper {
 
             c1.append(" if( $2.equals(\"").append(fn).append("\") ){ w.").append(fn).append("=").append(arg(ft, "$3")).append("; return; }");
             c2.append(" if( $2.equals(\"").append(fn).append("\") ){ return ($w)w.").append(fn).append("; }");
+            // 存储成员变量以及类型
             pts.put(fn, ft);
         }
 
         Method[] methods = c.getMethods();
         // get all public method.
+        // 除了在Object中声明的方法，还有其他方法吗？
         boolean hasMethod = hasMethods(methods);
         if (hasMethod) {
             c3.append(" try{");
@@ -152,6 +156,7 @@ public abstract class Wrapper {
             if (m.getDeclaringClass() == Object.class) //ignore Object's method.
                 continue;
 
+            // 方法名称相同，入参长度相同
             String mn = m.getName();
             c3.append(" if( \"").append(mn).append("\".equals( $2 ) ");
             int len = m.getParameterTypes().length;

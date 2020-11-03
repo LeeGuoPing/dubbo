@@ -99,6 +99,7 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
+        // 是否有延迟导出,是否已经导出，是否已经取消导出
         if (isDelay() && !isExported() && !isUnexported()) {
             if (logger.isInfoEnabled()) {
                 logger.info("The service ready on spring started. service: " + getInterface());
@@ -107,6 +108,10 @@ public class ServiceBean<T> extends ServiceConfig<T> implements InitializingBean
         }
     }
 
+    /**
+     * 是否需要延迟导出
+     * @return true 不需要延迟导出， false 需要延迟导出
+     */
     private boolean isDelay() {
         Integer delay = getDelay();
         ProviderConfig provider = getProvider();

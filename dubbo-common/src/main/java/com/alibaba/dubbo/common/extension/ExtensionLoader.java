@@ -98,10 +98,12 @@ public class ExtensionLoader<T> {
         objectFactory = (type == ExtensionFactory.class ? null : ExtensionLoader.getExtensionLoader(ExtensionFactory.class).getAdaptiveExtension());
     }
 
+    // lgp read
     private static <T> boolean withExtensionAnnotation(Class<T> type) {
         return type.isAnnotationPresent(SPI.class);
     }
 
+    // lgp read
     @SuppressWarnings("unchecked")
     public static <T> ExtensionLoader<T> getExtensionLoader(Class<T> type) {
         if (type == null)
@@ -116,6 +118,7 @@ public class ExtensionLoader<T> {
 
         ExtensionLoader<T> loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
         if (loader == null) {
+            // 这里给type赋值
             EXTENSION_LOADERS.putIfAbsent(type, new ExtensionLoader<T>(type));
             loader = (ExtensionLoader<T>) EXTENSION_LOADERS.get(type);
         }
@@ -286,6 +289,18 @@ public class ExtensionLoader<T> {
     }
 
     /**
+     * Return default extension, return <code>null</code> if it's not configured.
+     */
+    public T getDefaultExtension() {
+        getExtensionClasses();
+        if (null == cachedDefaultName || cachedDefaultName.length() == 0
+                || "true".equals(cachedDefaultName)) {
+            return null;
+        }
+        return getExtension(cachedDefaultName);
+    }
+
+    /**
      * Find the extension with the given name. If the specified name is not found, then {@link IllegalStateException}
      * will be thrown.
      */
@@ -312,18 +327,6 @@ public class ExtensionLoader<T> {
             }
         }
         return (T) instance;
-    }
-
-    /**
-     * Return default extension, return <code>null</code> if it's not configured.
-     */
-    public T getDefaultExtension() {
-        getExtensionClasses();
-        if (null == cachedDefaultName || cachedDefaultName.length() == 0
-                || "true".equals(cachedDefaultName)) {
-            return null;
-        }
-        return getExtension(cachedDefaultName);
     }
 
     public boolean hasExtension(String name) {
@@ -568,19 +571,22 @@ public class ExtensionLoader<T> {
 
     // synchronized in getExtensionClasses
     private Map<String, Class<?>> loadExtensionClasses() {
+        // type 什么时候赋值的？ getExtensionLoader 方法进行赋值
         final SPI defaultAnnotation = type.getAnnotation(SPI.class);
         if (defaultAnnotation != null) {
             String value = defaultAnnotation.value();
             if ((value = value.trim()).length() > 0) {
                 String[] names = NAME_SEPARATOR.split(value);
                 if (names.length > 1) {
+                    // spi注解中是默认的实现
                     throw new IllegalStateException("more than 1 default extension name on extension " + type.getName()
                             + ": " + Arrays.toString(names));
                 }
+                // 为默认注解赋值
                 if (names.length == 1) cachedDefaultName = names[0];
             }
         }
-
+        // 加载目录下的资源
         Map<String, Class<?>> extensionClasses = new HashMap<String, Class<?>>();
         loadDirectory(extensionClasses, DUBBO_INTERNAL_DIRECTORY);
         loadDirectory(extensionClasses, DUBBO_DIRECTORY);
@@ -622,13 +628,13 @@ public class ExtensionLoader<T> {
                     if (line.length() > 0) {
                         try {
                             String name = null;
-                            int i = line.indexOf('=');
-                            if (i > 0) {
+                             int i = line.indexOf('=');
+                             if (i > 0) {
                                 name = line.substring(0, i).trim();
                                 line = line.substring(i + 1).trim();
                             }
                             if (line.length() > 0) {
-                                loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
+                                 loadClass(extensionClasses, resourceURL, Class.forName(line, true, classLoader), name);
                             }
                         } catch (Throwable t) {
                             IllegalStateException e = new IllegalStateException("Failed to load extension class(interface: " + type + ", class line: " + line + ") in " + resourceURL + ", cause: " + t.getMessage(), t);
@@ -675,7 +681,7 @@ public class ExtensionLoader<T> {
                 }
             }
             String[] names = NAME_SEPARATOR.split(name);
-            if (names != null && names.length > 0) {
+             if (names != null && names.length > 0) {
                 Activate activate = clazz.getAnnotation(Activate.class);
                 if (activate != null) {
                     cachedActivates.put(names[0], activate);

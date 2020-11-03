@@ -207,6 +207,7 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         }
 
         if (delay != null && delay > 0) {
+            // 开启线程，延迟导出
             delayExportExecutor.schedule(new Runnable() {
                 @Override
                 public void run() {
@@ -214,14 +215,17 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
                 }
             }, delay, TimeUnit.MILLISECONDS);
         } else {
+            // 立即导出
             doExport();
         }
     }
 
     protected synchronized void doExport() {
+        // 被取消导出了
         if (unexported) {
             throw new IllegalStateException("Already unexported!");
         }
+        // 已经导出了
         if (exported) {
             return;
         }

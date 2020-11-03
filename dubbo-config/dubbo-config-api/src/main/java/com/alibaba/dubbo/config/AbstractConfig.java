@@ -93,6 +93,7 @@ public abstract class AbstractConfig implements Serializable {
         if (config == null) {
             return;
         }
+        // ProviderConfig "dubbo.provider."
         String prefix = "dubbo." + getTagName(config.getClass()) + ".";
         Method[] methods = config.getClass().getMethods();
         for (Method method : methods) {
@@ -100,6 +101,7 @@ public abstract class AbstractConfig implements Serializable {
                 String name = method.getName();
                 if (name.length() > 3 && name.startsWith("set") && Modifier.isPublic(method.getModifiers())
                         && method.getParameterTypes().length == 1 && isPrimitive(method.getParameterTypes()[0])) {
+                    // setAppleStore --> appleStore --> apple.store
                     String property = StringUtils.camelToSplitName(name.substring(3, 4).toLowerCase() + name.substring(4), ".");
 
                     String value = null;
@@ -157,6 +159,7 @@ public abstract class AbstractConfig implements Serializable {
     }
 
     private static String getTagName(Class<?> cls) {
+        // ProviderConfig-->provider
         String tag = cls.getSimpleName();
         for (String suffix : SUFFIXES) {
             if (tag.endsWith(suffix)) {
